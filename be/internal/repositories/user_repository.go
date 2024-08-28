@@ -3,7 +3,6 @@ package repositories
 import (
 	"be/internal/models"
 	"gorm.io/gorm"
-	"log"
 )
 
 type UserRepository struct {
@@ -13,11 +12,7 @@ type UserRepository struct {
 func (s *UserRepository) CreateUser(u *models.User) error {
 	result := s.Create(u)
 
-	if result.Error != nil {
-		log.Fatal(result.Error)
-	}
-
-	return nil
+	return result.Error
 }
 
 func (s *UserRepository) FindByUsername(username string) (models.User, error) {

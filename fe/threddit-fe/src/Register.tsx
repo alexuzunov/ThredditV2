@@ -1,6 +1,8 @@
-import React from 'react';
+// src/components/Register.tsx
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Form, Button, Container, Card } from 'react-bootstrap';
+import axiosInstance from './helpers/axiosInstance';
 
 interface RegistrationFormInputs {
   username: string;
@@ -17,9 +19,21 @@ const Register: React.FC = () => {
     formState: { errors },
   } = useForm<RegistrationFormInputs>();
 
-  const onSubmit = (data: RegistrationFormInputs) => {
-    console.log(data);
-    // Handle registration logic here
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const onSubmit = async (data: RegistrationFormInputs) => {
+    try {
+      setErrorMessage(null); // Clear previous errors
+      await axiosInstance.post('/register', data);
+      // Handle successful registration, e.g., redirect to login page
+      alert('Registration successful!');
+    } catch (error: any) {
+      if (error.response && error.response.data) {
+        setErrorMessage(error.response.data.message || 'An error occurred');
+      } else {
+        setErrorMessage('An error occurred');
+      }
+    }
   };
 
   const validatePasswordMatch = (value: string) => {
@@ -34,6 +48,11 @@ const Register: React.FC = () => {
       <Card className="p-4 shadow-sm" style={{ width: '24rem' }}>
         <Card.Body>
           <Card.Title className="text-center mb-4">Sign Up for Reddit</Card.Title>
+          {errorMessage && (
+            <div className="alert alert-danger">
+              {errorMessage}
+            </div>
+          )}
           <Form onSubmit={handleSubmit(onSubmit)}>
             <Form.Group className="mb-3" controlId="username">
               <Form.Label>Username</Form.Label>

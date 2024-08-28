@@ -1,27 +1,27 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
-
-type Role string
+type UserRole string
 
 const (
-	Admin    Role = "admin"
-	Redditor Role = "redditor"
+	RoleRedditor UserRole = "redditor"
+	RoleAdmin    UserRole = "admin"
 )
 
 type User struct {
-	gorm.Model
-	Email         string       `json:"email,omitempty"`
-	Username      string       `gorm:"unique" json:"username,omitempty"`
-	Password      string       `json:"password,omitempty"`
-	Image         string       `json:"image,omitempty"`
-	Followers     []*User      `gorm:"many2many:followers"`
-	Subreddits    []Subreddit  `gorm:"foreignkey:CreatorID"`
-	Posts         []Post       `gorm:"foreignkey:AuthorID"`
-	Comments      []Comment    `gorm:"foreignkey:AuthorID"`
-	Subscriptions []*Subreddit `gorm:"many2many:subscribers"`
-	Votes         []Vote       `gorm:"foreignkey:AuthorID"`
-	Role          Role         `json:"role,omitempty"`
+	ID       uint     `gorm:"primaryKey"`
+	Username string   `gorm:"uniqueIndex;size:100;not null"`
+	Email    string   `gorm:"uniqueIndex;size:100;not null"`
+	Password string   `gorm:"not null"`
+	Role     UserRole `gorm:"type:varchar(20);default:'user'"`
+	Avatar   string   `gorm:"size:255"`
+	Bio      string   `gorm:"size:255"`
+
+	// Relationships
+	Posts         []Post      `gorm:"foreignKey:UserID"`
+	Comments      []Comment   `gorm:"foreignKey:UserID"`
+	Votes         []Vote      `gorm:"foreignKey:UserID"`
+	Following     []User      `gorm:"many2many:user_followers;joinForeignKey:FollowerID;JoinReferences:FollowedID"`
+	Followers     []User      `gorm:"many2many:user_followers;joinForeignKey:FollowedID;JoinReferences:FollowerID"`
+	Subscriptions []Subreddit `gorm:"many2many:subreddit_subscriptions"`
+	Moderating    []Subreddit `gorm:"many2many:subreddit_moderators"`
 }

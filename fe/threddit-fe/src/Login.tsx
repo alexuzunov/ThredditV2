@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button, Card, Container, Form } from 'react-bootstrap';
+import axiosInstance from './helpers/axiosInstance';
 
 interface LoginFormInputs {
   username: string;
@@ -10,9 +11,21 @@ interface LoginFormInputs {
 const Login: React.FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
 
-  const onSubmit = (data: LoginFormInputs) => {
-    console.log(data);
-    // Handle login logic here
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const onSubmit = async (data: LoginFormInputs) => {
+    try {
+        setErrorMessage(null); // Clear previous errors
+        await axiosInstance.post('/login', data);
+        // Handle successful registration, e.g., redirect to login page
+        alert('Login successful!');
+    } catch (error: any) {
+        if (error.response && error.response.data) {
+            setErrorMessage(error.response.data.message || 'An error occurred');
+        } else {
+            setErrorMessage('An error occurred');
+        }
+    }
   };
 
   return (
@@ -20,6 +33,11 @@ const Login: React.FC = () => {
       <Card className="p-4 shadow-sm" style={{ width: '24rem' }}>
         <Card.Body>
           <Card.Title className="text-center mb-4">Threddit Login</Card.Title>
+          {errorMessage && (
+            <div className="alert alert-danger">
+              {errorMessage}
+            </div>
+          )}
           <Form onSubmit={handleSubmit(onSubmit)}>
             <Form.Group className="mb-3" controlId="username">
               <Form.Label>Username</Form.Label>

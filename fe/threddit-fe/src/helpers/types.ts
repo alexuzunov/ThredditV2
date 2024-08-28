@@ -1,3 +1,10 @@
+export interface Comment {
+    id: string;
+    content: string;
+    createdAt: string;
+    replies?: Comment[]; // Add this to support nested comments
+}
+
 export interface Post {
     id: string;
     title: string;
@@ -7,6 +14,7 @@ export interface Post {
     upvotes: number;
     downvotes: number;
     createdAt: string;
+    comments: Comment[];
 }
   
 export interface Subreddit {
