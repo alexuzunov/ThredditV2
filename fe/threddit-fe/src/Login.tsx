@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button, Card, Container, Form } from 'react-bootstrap';
-import axiosInstance from './helpers/axiosInstance';
+import { AuthContext } from './auth/AuthContext';
 
 interface LoginFormInputs {
   username: string;
@@ -12,18 +12,21 @@ const Login: React.FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const authContext = useContext(AuthContext);
 
   const onSubmit = async (data: LoginFormInputs) => {
-    try {
-        setErrorMessage(null); // Clear previous errors
-        await axiosInstance.post('/login', data);
-        // Handle successful registration, e.g., redirect to login page
-        alert('Login successful!');
-    } catch (error: any) {
-        if (error.response && error.response.data) {
-            setErrorMessage(error.response.data.message || 'An error occurred');
-        } else {
-            setErrorMessage('An error occurred');
+    if (authContext) {
+        try {
+            setErrorMessage(null); // Clear previous errors
+            await authContext.login(data.username, data.password);
+            
+            alert('Login successful!');
+        } catch (error: any) {
+            if (error.response && error.response.data) {
+                setErrorMessage(error.response.data.message || 'An error occurred');
+            } else {
+                setErrorMessage('An error occurred');
+            }
         }
     }
   };

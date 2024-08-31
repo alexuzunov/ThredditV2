@@ -8,6 +8,8 @@ type Repository struct {
 	*UserRepository
 	*SubredditRepository
 	*PostRepository
+	*CommentRepository
+	*VoteRepository
 }
 
 func NewRepository(db *gorm.DB) (*Repository, error) {
@@ -15,5 +17,7 @@ func NewRepository(db *gorm.DB) (*Repository, error) {
 		UserRepository:      &UserRepository{DB: db},
 		SubredditRepository: &SubredditRepository{DB: db},
 		PostRepository:      &PostRepository{DB: db},
+		CommentRepository:   &CommentRepository{DB: db},
+		VoteRepository:      &VoteRepository{DB: db},
 	}, nil
 }

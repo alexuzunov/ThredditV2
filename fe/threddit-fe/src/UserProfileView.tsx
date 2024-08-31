@@ -18,6 +18,7 @@ const dummyUserProfile = {
       content: 'Can anyone explain the basics of React hooks?',
       upvotes: 120,
       downvotes: 5,
+      voteStatus: 'none',
       createdAt: '2024-08-27T10:00:00Z',
       comments: [
         {
@@ -30,12 +31,18 @@ const dummyUserProfile = {
               content: 'Yes, particularly useState and useEffect.',
               createdAt: '2024-08-27T12:00:00Z'
             }
-          ]
+          ],
+          upvotes: 5,
+          downvotes: 3,
+          voteStatus: 'none'
         },
         {
           id: '2',
           content: 'Check out the official React docs for a good introduction.',
-          createdAt: '2024-08-27T12:00:00Z'
+          createdAt: '2024-08-27T12:00:00Z',
+          upvotes: 5,
+          downvotes: 3,
+          voteStatus: 'none'
         }
       ]
     }
@@ -61,10 +68,10 @@ const UserProfileView: React.FC = () => {
               <Card.Text>{profileUser.bio}</Card.Text>
               {profileUser.id && ( // Conditionally render Follow button
                 <Button
-                  variant={isFollowing ? 'secondary' : 'primary'}
+                  variant={isFollowing ? 'outline-primary' : 'primary'}
                   onClick={handleFollowToggle}
                 >
-                  {isFollowing ? 'Following' : 'Follow'}
+                  {isFollowing ? 'Unfollow' : 'Follow'}
                 </Button>
               )}
             </div>

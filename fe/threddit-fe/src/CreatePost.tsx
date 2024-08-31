@@ -1,22 +1,80 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Form, Button, Container, Card, Tabs, Tab, Image } from 'react-bootstrap';
+import axiosInstance from './helpers/axiosInstance';
 
 interface PostCreationFormInputs {
   title: string;
   content?: string;
   url?: string;
   image?: FileList;
+  subredditID: string;
+}
+
+interface Subreddit {
+  id: string;
+  name: string;
 }
 
 const CreatePost: React.FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<PostCreationFormInputs>();
   const [activeTab, setActiveTab] = useState<string>('text');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [subreddits, setSubreddits] = useState<Subreddit[]>([]);
 
-  const onSubmit = (data: PostCreationFormInputs) => {
-    console.log(data);
-    // Handle post submission logic here
+  useEffect(() => {
+    // Fetch subreddits the user has joined
+    const fetchSubreddits = async () => {
+      try {
+        const response = await axiosInstance.get('/user/subreddits');
+        setSubreddits(response.data);
+      } catch (error) {
+        console.error('Failed to load subreddits:', error);
+      }
+    };
+
+    fetchSubreddits();
+  }, []);
+
+  const onSubmit = async (data: PostCreationFormInputs) => {
+    try {
+      let payload: any = {
+        title: data.title,
+      };
+
+      if (activeTab === 'text') {
+        payload.content = data.content;
+      } else if (activeTab === 'link') {
+        payload.url = data.url;
+      } else if (activeTab === 'image' && data.image?.[0]) {
+        const imageFile = data.image[0];
+        const reader = new FileReader();
+        reader.readAsDataURL(imageFile);
+        reader.onloadend = async () => {
+          const imageBase64 = reader.result as string;
+          payload.image = imageBase64;
+          payload.image_name = imageFile.name;
+
+          await postToServer(payload);
+        };
+
+        return;
+      }
+
+      await postToServer(payload);
+
+    } catch (error) {
+      console.error("Failed to create post:", error);
+    }
+  };
+
+  const postToServer = async (payload: any) => {
+    try {
+      const response = await axiosInstance.post(`api/posts`, payload);
+      console.log('Post created successfully:', response.data);
+    } catch (error) {
+      console.error('Error creating post:', error);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,19 +97,39 @@ const CreatePost: React.FC = () => {
           {/* Title at the Top */}
           <Card.Title className="text-center mb-4">Create a Post</Card.Title>
 
-          {/* Tabs Defined First */}
-          <Tabs
-            activeKey={activeTab}
-            onSelect={(k) => setActiveTab(k || 'text')}
-            className="mb-3"
-          >
-            <Tab eventKey="text" title="Text" />
-            <Tab eventKey="link" title="Link" />
-            <Tab eventKey="image" title="Image" />
-          </Tabs>
-
-          {/* Form Fields Based on Selected Tab */}
           <Form onSubmit={handleSubmit(onSubmit)}>
+            <Form.Group className="mb-3" controlId="postSubreddit">
+              <Form.Label>Choose a Subreddit</Form.Label>
+              <Form.Control
+                as="select"
+                {...register('subredditID', { required: 'Please select a subreddit' })}
+                isInvalid={!!errors.subredditID}
+              >
+                <option value="">Select a subreddit...</option>
+                {subreddits.map((subreddit) => (
+                  <option key={subreddit.id} value={subreddit.id}>
+                    {subreddit.name}
+                  </option>
+                ))}
+              </Form.Control>
+              <Form.Control.Feedback type="invalid">
+                {errors.subredditID?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            {/* Tabs Defined First */}
+            <Tabs
+              activeKey={activeTab}
+              onSelect={(k) => setActiveTab(k || 'text')}
+              className="mb-3"
+            >
+              <Tab eventKey="text" title="Text" />
+              <Tab eventKey="link" title="Link" />
+              <Tab eventKey="image" title="Image" />
+            </Tabs>
+
+            {/* Form Fields Based on Selected Tab */}
+          
             <Form.Group className="mb-3" controlId="postTitle">
               <Form.Label>Title</Form.Label>
               <Form.Control

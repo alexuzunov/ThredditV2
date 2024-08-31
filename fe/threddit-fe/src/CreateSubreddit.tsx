@@ -15,9 +15,55 @@ const CreateSubreddit: React.FC = () => {
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [iconPreview, setIconPreview] = useState<string | null>(null);
 
-  const onSubmit = (data: SubredditCreationFormInputs) => {
-    console.log(data);
-    // Handle subreddit creation logic here
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const onSubmit = async (data: SubredditCreationFormInputs) => {
+    try {
+      let bannerBase64 = "";
+      let iconBase64 = "";
+
+      if (data.banner && data.banner[0]) {
+        bannerBase64 = await convertToBase64(data.banner[0]);
+      }
+
+      if (data.icon && data.icon[0]) {
+        iconBase64 = await convertToBase64(data.icon[0]);
+      }
+
+      const requestBody = {
+        name: data.name,
+        description: data.description,
+        privacy: data.privacy,
+        banner_image: bannerBase64 ? bannerBase64.split(',')[1] : "",  // Strip the "data:image/..." prefix
+        banner_name: data.banner && data.banner[0] ? data.banner[0].name : "",
+        icon_image: iconBase64 ? iconBase64.split(',')[1] : "",  // Strip the "data:image/..." prefix
+        icon_name: data.icon && data.icon[0] ? data.icon[0].name : "",
+      };
+
+      const response = await fetch('/api/subreddits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create subreddit');
+      }
+
+      const result = await response.json();
+      console.log('Subreddit created successfully', result);
+    } catch (error) {
+      console.error('Error creating subreddit:', error);
+    }
   };
 
   const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {

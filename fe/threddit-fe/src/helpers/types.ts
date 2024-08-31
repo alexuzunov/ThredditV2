@@ -2,6 +2,9 @@ export interface Comment {
     id: string;
     content: string;
     createdAt: string;
+    upvotes: number;
+    downvotes: number;
+    voteStatus: string;
     replies?: Comment[]; // Add this to support nested comments
 }
 
@@ -13,6 +16,7 @@ export interface Post {
     content: string;
     upvotes: number;
     downvotes: number;
+    voteStatus: string;
     createdAt: string;
     comments: Comment[];
 }

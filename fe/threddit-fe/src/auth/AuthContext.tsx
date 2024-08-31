@@ -2,10 +2,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import axiosInstance from "../helpers/axiosInstance";
 
-type Props = {
-    children?: React.ReactNode
-}
-
 interface AuthContextProps {
   user: any;
   login: (username: string, password: string) => void;
@@ -14,7 +10,7 @@ interface AuthContextProps {
 
 export const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-export const AuthProvider: React.FC = ({ children }: Props) => {
+export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -36,7 +32,7 @@ export const AuthProvider: React.FC = ({ children }: Props) => {
   };
 
   const logout = async () => {
-    // Clear user data and cookies
+    await axiosInstance.post("/logout")
     setUser(null);
   };
 

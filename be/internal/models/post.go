@@ -4,10 +4,13 @@ import (
 	"time"
 )
 
+// Post represents a post in the application
 type Post struct {
-	ID        uint   `gorm:"primaryKey"`
-	Title     string `gorm:"size:255;not null"`
-	Content   string `gorm:"type:text"`
+	ID        uint    `gorm:"primaryKey"`
+	Title     string  `gorm:"size:255;not null"` // Title is required
+	Content   *string `gorm:"type:text"`         // Optional text content
+	URL       *string `gorm:"size:255"`          // Optional URL, must be a valid URL format
+	Image     *string `gorm:"size:255"`          // Optional image, stored as a file path or URL
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
